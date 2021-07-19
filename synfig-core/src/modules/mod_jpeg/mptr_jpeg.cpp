@@ -39,18 +39,14 @@
 #endif
 
 #include "mptr_jpeg.h"
-#include <synfig/time.h>
 #include <synfig/general.h>
-#include <synfig/localization.h>
 
 #include <cstdio>
-#include <sstream>
 #endif
 
 /* === M A C R O S ========================================================= */
 
 using namespace synfig;
-using namespace std;
 using namespace etl;
 
 #define JPEG_CHECK_BYTES 	8

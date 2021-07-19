@@ -32,7 +32,6 @@
 #	include <config.h>
 #endif
 
-#include <synfig/localization.h>
 #include <synfig/general.h>
 
 #include <glib/gstdio.h>
@@ -47,7 +46,6 @@
 /* === M A C R O S ========================================================= */
 
 using namespace synfig;
-using namespace std;
 using namespace etl;
 
 /* === G L O B A L S ======================================================= */

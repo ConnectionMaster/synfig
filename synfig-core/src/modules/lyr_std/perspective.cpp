@@ -36,18 +36,13 @@
 #include <ETL/misc>
 
 #include <synfig/localization.h>
-#include <synfig/general.h>
 
 #include <synfig/string.h>
-#include <synfig/time.h>
 #include <synfig/context.h>
 #include <synfig/paramdesc.h>
-#include <synfig/renddesc.h>
 #include <synfig/surface.h>
 #include <synfig/value.h>
-#include <synfig/valuenode.h>
 #include <synfig/transform.h>
-#include <synfig/cairo_renddesc.h>
 
 #include <synfig/rendering/common/task/tasktransformation.h>
 #include <synfig/rendering/common/task/taskcontour.h>
@@ -1125,11 +1120,12 @@ Perspective::build_rendering_task_vfunc(Context context) const
 		task_contour->contour->line_to( Vector(clip_rect.maxx, clip_rect.miny) );
 		task_contour->contour->close();
 		task_contour->contour->color = Color(1, 1, 1, 1);
+		task_contour->contour->invert = true;
 		task_contour->contour->antialias = interpolation != Color::INTERPOLATION_NEAREST;
 
 		rendering::TaskBlend::Handle task_blend(new rendering::TaskBlend());
 		task_blend->amount = 1;
-		task_blend->blend_method = Color::BLEND_ALPHA;
+		task_blend->blend_method = Color::BLEND_ALPHA_OVER;
 		task_blend->sub_task_a() = sub_task;
 		task_blend->sub_task_b() = task_contour;
 		

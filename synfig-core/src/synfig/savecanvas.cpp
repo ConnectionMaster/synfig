@@ -60,14 +60,10 @@
 
 #include "zstreambuf.h"
 #include "importer.h"
-#include "cairoimporter.h"
 
 #include <libxml++/libxml++.h>
 #include "gradient.h"
 
-/*extern "C" {
-#include <libxml/tree.h>
-}*/
 
 #endif
 
@@ -574,36 +570,15 @@ xmlpp::Element* encode_dynamic_list(xmlpp::Element* root,ValueNode_DynamicList::
 
 	vector<ValueNode_DynamicList::ListEntry>::const_iterator iter;
 
-	ValueNode_BLine::ConstHandle bline_value_node(ValueNode_BLine::ConstHandle::cast_dynamic(value_node));
-	ValueNode_WPList::ConstHandle wplist_value_node(ValueNode_WPList::ConstHandle::cast_dynamic(value_node));
-	ValueNode_DIList::ConstHandle dilist_value_node(ValueNode_DIList::ConstHandle::cast_dynamic(value_node));
-
 	bool must_rotate_point_list = false;
 
-	if(bline_value_node)
+	if(ValueNode_BLine::ConstHandle bline_value_node = ValueNode_BLine::ConstHandle::cast_dynamic(value_node))
 	{
 		if(bline_value_node->get_loop())
 		{
-			root->set_attribute("loop","true");
 			if (save_canvas_version < RELEASE_VERSION_1_4_0) // or get_file_version()?
 				must_rotate_point_list = true;
 		}
-		else
-			root->set_attribute("loop","false");
-	}
-	if(wplist_value_node)
-	{
-		if(wplist_value_node->get_loop())
-			root->set_attribute("loop","true");
-		else
-			root->set_attribute("loop","false");
-	}
-	if(dilist_value_node)
-	{
-		if(dilist_value_node->get_loop())
-			root->set_attribute("loop","true");
-		else
-			root->set_attribute("loop","false");
 	}
 
 	std::vector<ValueNode_DynamicList::ListEntry> corrected_valuenode_list = value_node->list;
@@ -617,6 +592,9 @@ xmlpp::Element* encode_dynamic_list(xmlpp::Element* root,ValueNode_DynamicList::
 			}
 		}
 	}
+
+	if (value_node->get_loop())
+		root->set_attribute("loop","true");
 
 	for(iter=corrected_valuenode_list.begin();iter!=corrected_valuenode_list.end();++iter)
 	{
@@ -923,12 +901,7 @@ xmlpp::Element* encode_layer(xmlpp::Element* root,Layer::ConstHandle layer)
 				bool registered_in_importer = Importer::book().count(ext) > 0;
 				bool supports_by_importer = registered_in_importer
 						                 && Importer::book()[ext].supports_file_system_wrapper;
-				bool registered_in_cairoimporter = CairoImporter::book().count(ext) > 0;
-				bool supports_by_cairoimporter = registered_in_cairoimporter
-						                      && CairoImporter::book()[ext].supports_file_system_wrapper;
-				bool supports = (supports_by_importer && supports_by_cairoimporter)
-						     || (supports_by_importer && !registered_in_cairoimporter)
-						     || (!registered_in_importer && supports_by_cairoimporter);
+				bool supports = supports_by_importer;
 				if (supports)
 					if (save_canvas_external_file_callback(save_canvas_external_file_user_data, layer, iter->get_name(), filename))
 						value.set(filename);

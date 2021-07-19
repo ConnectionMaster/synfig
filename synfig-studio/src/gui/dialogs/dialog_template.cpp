@@ -40,7 +40,6 @@
 
 /* === U S I N G =========================================================== */
 using namespace synfig;
-using namespace std;
 using namespace studio;
 
 /* === M A C R O S ========================================================= */
@@ -133,8 +132,8 @@ Dialog_Template::Dialog_Template(Gtk::Window& parent, synfig::String dialog_titl
 	//! TODO create a warning zone to push message on rare events (like no brush path, zero fps ...)
 	//! this warning zone could also hold normal message like : "x change to come"  (and a link to "Changes summary" page)
 
-	get_vbox()->pack_start(main_grid);
-	get_vbox()->set_border_width(12);
+	get_content_area()->pack_start(main_grid);
+	get_content_area()->set_border_width(12);
 
 	show_all_children();
 }
@@ -164,7 +163,8 @@ void
 Dialog_Template::attach_label(Gtk::Grid *grid, synfig::String str, guint row)
 {
 	Gtk::Label* label(manage(new Gtk::Label((str + ":").c_str())));
-	label->set_alignment(Gtk::ALIGN_START, Gtk::ALIGN_CENTER);
+	label->set_halign(Gtk::ALIGN_START);
+	label->set_valign(Gtk::ALIGN_CENTER);
 	label->set_margin_start(10);
 	grid->attach(*label, 0, row, 1, 1);
 }
@@ -174,7 +174,8 @@ Dialog_Template::attach_label_section(Gtk::Grid *grid, synfig::String str, guint
 {
 	Gtk::Label* label(manage(new Gtk::Label(str)));
 	label->set_attributes(section_attrlist);
-	label->set_alignment(Gtk::ALIGN_START, Gtk::ALIGN_CENTER);
+	label->set_halign(Gtk::ALIGN_START);
+	label->set_valign(Gtk::ALIGN_CENTER);
 	grid->attach(*label, 0, row, 1, 1);
 }
 
@@ -183,7 +184,8 @@ Dialog_Template::attach_label_title(Gtk::Grid *grid, synfig::String str)
 {
 	Gtk::Label* label(manage(new Gtk::Label(str)));
 	label->set_attributes(title_attrlist);
-	label->set_alignment(Gtk::ALIGN_START, Gtk::ALIGN_CENTER);
+	label->set_halign(Gtk::ALIGN_START);
+	label->set_valign(Gtk::ALIGN_CENTER);
 	label->set_margin_start(20);
 	Gtk::EventBox* box(manage(new Gtk::EventBox()));
 	box->add(*label);
@@ -196,7 +198,8 @@ Dialog_Template::attach_label(Gtk::Grid *grid, synfig::String str, guint row, gu
 {
 	str = endstring?str+":":str;
 	Gtk::Label* label(manage(new Gtk::Label(str)));
-	label->set_alignment(Gtk::ALIGN_START, Gtk::ALIGN_CENTER);
+	label->set_halign(Gtk::ALIGN_START);
+	label->set_valign(Gtk::ALIGN_CENTER);
 	grid->attach(*label, col, row, 1, 1);
 	return label;
 }

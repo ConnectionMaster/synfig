@@ -37,7 +37,7 @@
 
 #include "trgt_imagemagick.h"
 #include <cstdio>
-#include <sys/types.h>
+
 #if HAVE_SYS_WAIT_H
  #include <sys/wait.h>
 #endif
@@ -50,7 +50,6 @@
 #if HAVE_FCNTL_H
  #include <fcntl.h>
 #endif
-#include <unistd.h>
 #include <ETL/misc>
 
 #endif
@@ -58,11 +57,11 @@
 /* === M A C R O S ========================================================= */
 
 using namespace synfig;
-using namespace std;
 using namespace etl;
 
 #if defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID)
  #define UNIX_PIPE_TO_PROCESSES
+ #include <unistd.h>
 #else
  #define WIN32_PIPE_TO_PROCESSES
 #endif
@@ -77,7 +76,6 @@ SYNFIG_TARGET_SET_VERSION(imagemagick_trgt,"0.1");
 /* === M E T H O D S ======================================================= */
 
 imagemagick_trgt::imagemagick_trgt(const char *Filename,  const synfig::TargetParam &params):
-	pid(-1),
 	imagecount(),
 	multi_image(false),
 	file(NULL),
@@ -92,7 +90,7 @@ imagemagick_trgt::~imagemagick_trgt()
 {
 	if(file){
 #if defined(WIN32_PIPE_TO_PROCESSES)
-		pclose(file);
+		_pclose(file);
 #elif defined(UNIX_PIPE_TO_PROCESSES)
 		fclose(file);
 		int status;
@@ -138,7 +136,7 @@ imagemagick_trgt::end_frame()
 		fputc(0,file);
 		fflush(file);
 #if defined(WIN32_PIPE_TO_PROCESSES)
-		pclose(file);
+		_pclose(file);
 #elif defined(UNIX_PIPE_TO_PROCESSES)
 		fclose(file);
 		int status;
@@ -154,7 +152,7 @@ imagemagick_trgt::start_frame(synfig::ProgressCallback *cb)
 {
 	const char *msg=_("Unable to open pipe to imagemagick's convert utility");
 
-	string newfilename;
+	std::string newfilename;
 
 	if (multi_image)
 		newfilename = (filename_sans_extension(filename) +
@@ -166,7 +164,7 @@ imagemagick_trgt::start_frame(synfig::ProgressCallback *cb)
 
 #if defined(WIN32_PIPE_TO_PROCESSES)
 
-	string command;
+	std::string command;
 
 	command=strprintf("convert -depth 8 -size %dx%d rgb%s:-[0] -density %dx%d \"%s\"\n",
 	                  desc.get_w(), desc.get_h(),                                   // size
@@ -175,7 +173,7 @@ imagemagick_trgt::start_frame(synfig::ProgressCallback *cb)
 	                  round_to_int(desc.get_y_res()/39.3700787402),
 	                  newfilename.c_str());
 
-	file=popen(command.c_str(),POPEN_BINARY_WRITE_TYPE);
+	file=_popen(command.c_str(),POPEN_BINARY_WRITE_TYPE);
 
 #elif defined(UNIX_PIPE_TO_PROCESSES)
 

@@ -41,7 +41,6 @@
 /* === C L A S S E S & S T R U C T S ======================================= */
 
 using namespace synfig;
-using namespace std;
 using namespace etl;
 
 class LinearGradient : public Layer_Composite, public Layer_NoDeform
@@ -72,7 +71,6 @@ private:
 	void fill_params(Params &params)const;
 	synfig::Color color_func(const Params &params, const synfig::Point &x, synfig::Real supersample = 0.0)const;
 	synfig::Real calc_supersample(const Params &params, synfig::Real pw, synfig::Real ph)const;
-	bool compile_gradient(cairo_pattern_t* pattern, Gradient gradient)const;
 
 public:
 	LinearGradient();
@@ -81,7 +79,6 @@ public:
 	virtual ValueBase get_param(const String &param)const;
 	virtual Color get_color(Context context, const Point &pos)const;
 	virtual bool accelerated_render(Context context,Surface *surface,int quality, const RendDesc &renddesc, ProgressCallback *cb)const;
-	virtual bool accelerated_cairorender(Context context, cairo_t *cr, int quality, const RendDesc &renddesc, ProgressCallback *cb)const;
 
 	synfig::Layer::Handle hit_check(synfig::Context context, const synfig::Point &point)const;
 

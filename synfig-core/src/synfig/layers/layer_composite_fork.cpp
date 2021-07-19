@@ -29,7 +29,6 @@
 #	include <config.h>
 #endif
 
-#include <synfig/general.h>
 #include <synfig/localization.h>
 
 #include "layer_composite_fork.h"
@@ -43,7 +42,6 @@
 
 /* === U S I N G =========================================================== */
 
-using namespace std;
 using namespace etl;
 using namespace synfig;
 

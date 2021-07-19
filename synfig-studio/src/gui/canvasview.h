@@ -438,7 +438,9 @@ private:
 
 	Gtk::ToolButton* create_action_toolbutton(const Glib::RefPtr<Gtk::Action> &action);
 	Gtk::SeparatorToolItem* create_tool_separator();
-	Gtk::Widget* create_display_bar();
+	Gtk::Widget* create_top_toolbar();
+	Gtk::Widget* create_stop_button();
+	Gtk::Widget* create_right_toolbar();
 
 	//! Pop up menu for the bezier (bline, draw) tool (?)
 	void popup_param_menu_bezier(float location, synfigapp::ValueDesc value_desc)
@@ -628,8 +630,8 @@ public:
 	void on_keyframe_toggle();
 	void on_keyframe_description_set();
 
-	void image_import();
-	void squence_import();
+	void import_file();
+	void import_sequence();
 
 	void on_waypoint_clicked_canvasview(synfigapp::ValueDesc,std::set<synfig::Waypoint,std::less<synfig::UniqueID> >, int button);
 

@@ -34,7 +34,6 @@
 #include "noise.h"
 
 #include <synfig/localization.h>
-#include <synfig/general.h>
 
 #include <synfig/string.h>
 #include <synfig/time.h>
@@ -43,7 +42,6 @@
 #include <synfig/renddesc.h>
 #include <synfig/surface.h>
 #include <synfig/value.h>
-#include <synfig/valuenode.h>
 #include <time.h>
 
 #endif
@@ -51,7 +49,6 @@
 /* === M A C R O S ========================================================= */
 
 using namespace synfig;
-using namespace std;
 using namespace etl;
 
 /* === G L O B A L S ======================================================= */
@@ -185,7 +182,7 @@ Noise::color_func(const Point &point, float pixel_size,Context /*context*/)const
 		}
 
 		if(super_sample && pixel_size) {
-			Real da = max(amount3, max(amount,amount2)) - min(amount3, min(amount,amount2));
+			Real da = std::max(amount3, std::max(amount,amount2)) - std::min(amount3, std::min(amount,amount2));
 			ret = compiled_gradient.average(amount - da, amount + da);
 		} else {
 			ret = compiled_gradient.color(amount);
@@ -320,16 +317,6 @@ Noise::get_color(Context context, const Point &point)const
 		return Color::blend(color,context.get_color(point),get_amount(),get_blend_method());
 }
 
-CairoColor
-Noise::get_cairocolor(Context context, const Point &point)const
-{
-	const CairoColor color(color_func(point,0,context));
-	
-	if(get_amount()==1.0 && get_blend_method()==Color::BLEND_STRAIGHT)
-		return color;
-	else
-		return CairoColor::blend(color,context.get_cairocolor(point),get_amount(),get_blend_method());
-}
 
 bool
 Noise::accelerated_render(Context context,Surface *surface,int quality, const RendDesc &renddesc, ProgressCallback *cb)const

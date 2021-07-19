@@ -1244,8 +1244,20 @@ DEFINE_ACTION("keyframe-properties", _("Properties"))
 		synfig::error("building menus and toolbars failed: " + ex.what());
 	}
 
+	auto default_accel_map = App::get_default_accel_map();
+	for (const auto& accel_item : default_accel_map) {
+		Gtk::AccelKey accel_key(accel_item.first, accel_item.second);
+		if (accel_key.get_key() == 0)
+			synfig::warning(_("Invalid accelerator: %s (for action: %s)"), accel_item.first, accel_item.second);
+		Gtk::AccelMap::add_entry(accel_key.get_path(), accel_key.get_key(), accel_key.get_mod());
+	}
+}
+
+const std::map<const char*, const char*>&
+App::get_default_accel_map()
+{
 	// Add default keyboard accelerators
-	const std::vector<std::pair<const char*, const char*>> default_accel_map = {
+	static const std::map<const char*, const char*> default_accel_map = {
 		// Toolbox
 		{"s",             "<Actions>/action_group_state_manager/state-normal"},
 		{"m",             "<Actions>/action_group_state_manager/state-smooth_move"},
@@ -1278,13 +1290,13 @@ DEFINE_ACTION("keyframe-properties", _("Properties"))
 		{"F8",                      "<Actions>/canvasview/properties"},
 		{"F12",                     "<Actions>/canvasview/options"},
 		{"<control>i",              "<Actions>/canvasview/import"},
-		//{"escape",                  "<Actions>/canvasview/stop")},
 		{"<Control>g",              "<Actions>/canvasview/toggle-grid-show"},
 		{"<Control>l",              "<Actions>/canvasview/toggle-grid-snap"},
 		{"<Control>n",              "<Actions>/mainwindow/new"},
 		{"<Control>o",              "<Actions>/mainwindow/open"},
 		{"<Control>s",              "<Actions>/canvasview/save"},
 		{"<Control><Shift>s",       "<Actions>/canvasview/save-as"},
+		{"<Control>e",              "<Actions>/canvasview/save-all"},
 		{"<Control>grave",          "<Actions>/canvasview/toggle-low-res"},
 		{"<Mod1>0",                 "<Actions>/canvasview/mask-none-ducks"},
 		{"<Mod1>1",                 "<Actions>/canvasview/mask-position-ducks"},
@@ -1299,16 +1311,6 @@ DEFINE_ACTION("keyframe-properties", _("Properties"))
 		{"<Mod1>5",                 "<Actions>/canvasview/mask-widthpoint-position-ducks"},
 		{"<Shift>Page_Up",          "<Actions>/action_group_layer_action_manager/action-LayerRaise"},
 		{"<Shift>Page_Down",        "<Actions>/action_group_layer_action_manager/action-LayerLower"},
-		{"<Control>1",              "<Actions>/canvasview/quality-01"},
-		{"<Control>2",              "<Actions>/canvasview/quality-02"},
-		{"<Control>3",              "<Actions>/canvasview/quality-03"},
-		{"<Control>4",              "<Actions>/canvasview/quality-04"},
-		{"<Control>5",              "<Actions>/canvasview/quality-05"},
-		{"<Control>6",              "<Actions>/canvasview/quality-06"},
-		{"<Control>7",              "<Actions>/canvasview/quality-07"},
-		{"<Control>8",              "<Actions>/canvasview/quality-08"},
-		{"<Control>9",              "<Actions>/canvasview/quality-09"},
-		{"<Control>0",              "<Actions>/canvasview/quality-10"},
 		{"<Primary>z",              "<Actions>/action_group_dock_history/undo"},
 #ifdef _WIN32
 		{"<Control>y",              "<Actions>/action_group_dock_history/redo"},
@@ -1316,7 +1318,6 @@ DEFINE_ACTION("keyframe-properties", _("Properties"))
 		{"<Primary><Shift>z",       "<Actions>/action_group_dock_history/redo"},
 #endif
 		{"Delete",                  "<Actions>/action_group_layer_action_manager/action-LayerRemove"},
-    	{"KP_Delete",               "<Actions>/action_group_layer_action_manager/action-LayerRemove"},
 		{"<Control>parenleft" ,     "<Actions>/canvasview/decrease-low-res-pixel-size"},
 		{"<Control>parenright" ,    "<Actions>/canvasview/increase-low-res-pixel-size"},
 		{"<Control><Mod1>parenleft",  "<Actions>/action_group_layer_action_manager/amount-dec"},
@@ -1339,16 +1340,11 @@ DEFINE_ACTION("keyframe-properties", _("Properties"))
 		{"<Control>minus",          "<Actions>/canvasview/canvas-zoom-out-2"},
 		{"<Control>0",              "<Actions>/canvasview/canvas-zoom-fit-2"},
 		{"space",                   "<Actions>/canvasview/play"},
-		{"space",                   "<Actions>/canvasview/pause"},
+		{"<Shift>space",            "<Actions>/canvasview/pause"},
 		{"<Control>space",          "<Actions>/canvasview/animate"},
 	};
 
-	for (const auto& accel_item : default_accel_map) {
-		Gtk::AccelKey accel_key(accel_item.first, accel_item.second);
-		if (accel_key.get_key() == 0)
-			synfig::warning(_("Invalid accelerator: %s (for action: %s)"), accel_item.first, accel_item.second);
-		Gtk::AccelMap::add_entry(accel_key.get_path(), accel_key.get_key(), accel_key.get_mod());
-	}
+	return default_accel_map;
 }
 
 /* === M E T H O D S ======================================================= */
@@ -1394,14 +1390,10 @@ App::App(const synfig::String& basepath, int *argc, char ***argv):
 	SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
 #endif
 
-	if(mkdir(synfigapp::Main::get_user_app_directory().c_str(),ACCESSPERMS)<0)
-	{
-		if(errno!=EEXIST)
-			synfig::error("UNABLE TO CREATE \"%s\"",synfigapp::Main::get_user_app_directory().c_str());
-	}
-	else
-	{
+	if (FileSystemNative::instance()->directory_create(synfigapp::Main::get_user_app_directory())) {
 		synfig::info("Created directory \"%s\"",synfigapp::Main::get_user_app_directory().c_str());
+	} else {
+		synfig::error("UNABLE TO CREATE \"%s\"",synfigapp::Main::get_user_app_directory().c_str());
 	}
 
 
@@ -1710,7 +1702,6 @@ App::App(const synfig::String& basepath, int *argc, char ***argv):
 		dock_manager->show_all_dock_dialogs();
 
 		main_window->present();
-		dock_toolbox->present();
 
 		splash_screen.hide();
 
@@ -1747,6 +1738,17 @@ App::App(const synfig::String& basepath, int *argc, char ***argv):
 	{
 		get_ui_interface()->error(_("Unknown exception caught when constructing App.\nThis software may be unstable.") + String("\n\n") + x);
 	}
+	catch(const std::runtime_error& re)	{
+		// specific handling for runtime_error
+		get_ui_interface()->error(std::string("Runtime error: ") + re.what());
+		std::cerr << "Runtime error: " << re.what() << std::endl;
+	}
+	catch(const std::exception& ex)	{
+		// specific handling for all exceptions extending std::exception, except
+		// std::runtime_error which is handled explicitly
+		get_ui_interface()->error(std::string("Exception: ") + ex.what());
+		std::cerr << "Error occurred: " << ex.what() << std::endl;
+	}
 	catch(...)
 	{
 		get_ui_interface()->error(_("Unknown exception caught when constructing App.\nThis software may be unstable."));
@@ -1768,6 +1770,7 @@ App::~App()
 	shutdown_in_progress=true;
 
 	save_settings();
+	save_accel_map();
 
 	synfigapp::Main::settings().remove_domain("pref");
 
@@ -1998,6 +2001,23 @@ App::load_accel_map()
 	catch(...)
 	{
 		synfig::warning("Caught exception when attempting to load accel map settings.");
+	}
+}
+
+void
+App::save_accel_map()
+{
+	try
+	{
+		synfig::ChangeLocale change_locale(LC_NUMERIC, "C");
+		{
+			std::string filename=get_config_file("accelrc");
+			Gtk::AccelMap::save(filename);
+		}
+	}
+	catch(...)
+	{
+		synfig::warning("Caught exception when attempting to save accel map settings.");
 	}
 }
 
@@ -2401,6 +2421,8 @@ App::dialog_open_file(const std::string &title, std::string &filename, std::stri
 	filter_supported->add_pattern("*.gif");
 	// 0.5 lipsync files
 	filter_supported->add_pattern("*.pgo");
+	filter_supported->add_pattern("*.tsv");
+	filter_supported->add_pattern("*.xml");
 
 	// Sub fileters
 	// 1 Synfig documents. sfg is not supported to import
@@ -2449,8 +2471,10 @@ App::dialog_open_file(const std::string &title, std::string &filename, std::stri
 
 	// 5 Lipsync files
 	Glib::RefPtr<Gtk::FileFilter> filter_lipsync = Gtk::FileFilter::create();
-	filter_lipsync->set_name(_("Lipsync (*.pgo)"));
+	filter_lipsync->set_name(_("Lipsync (*.pgo, *.tsv, *.xml)"));
 	filter_lipsync->add_pattern("*.pgo");
+	filter_lipsync->add_pattern("*.tsv");
+	filter_lipsync->add_pattern("*.xml");
 
 	// 6 Any files
 	Glib::RefPtr<Gtk::FileFilter> filter_any = Gtk::FileFilter::create();

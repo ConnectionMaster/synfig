@@ -109,7 +109,6 @@ private:
 	void sync()const;
 	String version;
 	void draw_particles(Surface *surface, const RendDesc &renddesc)const;
-	void draw_particles(cairo_t *cr)const;
 
 public:
 
@@ -126,7 +125,6 @@ public:
 	virtual Vocab get_param_vocab()const;
 
 	virtual bool accelerated_render(Context context,Surface *surface,int quality, const RendDesc &renddesc, ProgressCallback *cb)const;
-	virtual bool accelerated_cairorender(Context context, cairo_t *cr, int quality, const RendDesc &renddesc, ProgressCallback *cb)const;
 	using Layer::get_bounding_rect;
 	virtual Rect get_bounding_rect(Context context)const;
 };

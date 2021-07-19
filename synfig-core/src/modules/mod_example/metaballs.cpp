@@ -31,16 +31,13 @@
 #endif
 
 #include <synfig/localization.h>
-#include <synfig/general.h>
 
 #include <synfig/string.h>
-#include <synfig/time.h>
 #include <synfig/context.h>
 #include <synfig/paramdesc.h>
 #include <synfig/renddesc.h>
 #include <synfig/surface.h>
 #include <synfig/value.h>
-#include <synfig/valuenode.h>
 
 #include "metaballs.h"
 
@@ -49,7 +46,6 @@
 /* === U S I N G =========================================================== */
 
 using namespace etl;
-using namespace std;
 using namespace synfig;
 
 /* === G L O B A L S ======================================================= */
@@ -226,15 +222,6 @@ Metaballs::get_color(Context context, const Point &pos)const
 		return Color::blend(gradient(totaldensity(pos)),context.get_color(pos),get_amount(),get_blend_method());
 }
 
-CairoColor
-Metaballs::get_cairocolor(Context context, const Point &pos)const
-{
-	Gradient gradient=param_gradient.get(Gradient());
-	if(get_amount()==1.0 && get_blend_method()==Color::BLEND_STRAIGHT)
-		return CairoColor(gradient(totaldensity(pos)));
-	else
-		return CairoColor::blend(CairoColor(gradient(totaldensity(pos))),context.get_cairocolor(pos),get_amount(),get_blend_method());
-}
 
 
 bool

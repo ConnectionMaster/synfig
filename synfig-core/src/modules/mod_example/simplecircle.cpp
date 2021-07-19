@@ -32,7 +32,6 @@
 #endif
 
 #include <synfig/localization.h>
-#include <synfig/general.h>
 
 #include <synfig/string.h>
 #include <synfig/time.h>
@@ -50,7 +49,6 @@
 /* === U S I N G =========================================================== */
 
 using namespace etl;
-using namespace std;
 using namespace synfig;
 
 /* === G L O B A L S ======================================================= */

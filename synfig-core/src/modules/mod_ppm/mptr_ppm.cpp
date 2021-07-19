@@ -36,20 +36,16 @@
 #include <synfig/importer.h>
 #include <synfig/time.h>
 #include <synfig/surface.h>
-#include <synfig/general.h>
 #include <synfig/localization.h>
 #include <synfig/smartfile.h>
 
 #include <cstdio>
-#include <algorithm>
-#include <functional>
 
 #endif
 
 /* === M A C R O S ========================================================= */
 
 using namespace synfig;
-using namespace std;
 using namespace etl;
 
 /* === G L O B A L S ======================================================= */

@@ -30,11 +30,9 @@
 #endif
 
 #include <cmath>
-#include <climits>
 
 #include "layer_meshtransform.h"
 
-#include <synfig/general.h>
 #include <synfig/localization.h>
 
 #include <synfig/context.h>
@@ -49,7 +47,6 @@
 /* === U S I N G =========================================================== */
 
 using namespace etl;
-using namespace std;
 using namespace synfig;
 
 /* === M A C R O S ========================================================= */

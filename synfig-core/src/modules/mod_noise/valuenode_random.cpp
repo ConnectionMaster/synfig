@@ -40,13 +40,11 @@
 #include <synfig/vector.h>
 
 #include <ETL/misc>
-#include <time.h>
 
 #endif
 
 /* === U S I N G =========================================================== */
 
-using namespace std;
 using namespace etl;
 using namespace synfig;
 

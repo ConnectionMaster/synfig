@@ -34,7 +34,6 @@
 
 #include "mptr_ffmpeg.h"
 #include <cstdio>
-#include <sys/types.h>
 #include <synfig/general.h>
 #include <synfig/localization.h>
 #if HAVE_SYS_WAIT_H
@@ -49,7 +48,6 @@
 #if HAVE_FCNTL_H
  #include <fcntl.h>
 #endif
-#include <unistd.h>
 #include <iostream>
 #endif
 
@@ -60,6 +58,7 @@ using namespace std;
 using namespace etl;
 
 #if defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID)
+ #include <unistd.h> // for popen
  #define UNIX_PIPE_TO_PROCESSES
 #else
  #define WIN32_PIPE_TO_PROCESSES
@@ -88,7 +87,7 @@ ffmpeg_mptr::seek_to(const Time& time)
 		if(file)
 		{
 #if defined(WIN32_PIPE_TO_PROCESSES)
-			pclose(file);
+			_pclose(file);
 #elif defined(UNIX_PIPE_TO_PROCESSES)
 			fclose(file);
 			int status;
@@ -110,13 +109,13 @@ ffmpeg_mptr::seek_to(const Time& time)
 			binary_path = etl::dirname(binary_path)+ETL_DIRECTORY_SEPARATOR;
 		binary_path += "ffmpeg.exe";
 
-		command=strprintf("\"%s\" -ss %s -i \"%s\" -vframes 1 -an -f image2pipe -vcodec ppm -\n", binary_path.c_str(), position, identifier.filename.c_str());
+		command=strprintf("\"%s\" -ss %s -i \"%s\" -vframes 1 -an -f image2pipe -vcodec ppm -\n", binary_path.c_str(), position.c_str(), identifier.filename.c_str());
 		
 		// This covers the dumb cmd.exe behavior.
 		// See: http://eli.thegreenplace.net/2011/01/28/on-spaces-in-the-paths-of-programs-and-files-on-windows/
 		command = "\"" + command + "\"";
 
-		file=popen(command.c_str(),POPEN_BINARY_READ_TYPE);
+		file=_popen(command.c_str(),POPEN_BINARY_READ_TYPE);
 
 #elif defined(UNIX_PIPE_TO_PROCESSES)
 
@@ -231,7 +230,6 @@ ffmpeg_mptr::grab_frame(void)
 ffmpeg_mptr::ffmpeg_mptr(const synfig::FileSystem::Identifier &identifier):
 	synfig::Importer(identifier)
 {
-	pid=-1;
 #ifdef HAVE_TERMIOS_H
 	tcgetattr (0, &oldtty);
 #endif
@@ -245,7 +243,7 @@ ffmpeg_mptr::~ffmpeg_mptr()
 	if(file)
 	{
 #if defined(WIN32_PIPE_TO_PROCESSES)
-		pclose(file);
+		_pclose(file);
 #elif defined(UNIX_PIPE_TO_PROCESSES)
 		fclose(file);
 		int status;

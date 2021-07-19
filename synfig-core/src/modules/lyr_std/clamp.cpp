@@ -33,7 +33,6 @@
 #include "clamp.h"
 
 #include <synfig/localization.h>
-#include <synfig/general.h>
 
 #include <synfig/string.h>
 #include <synfig/time.h>
@@ -42,15 +41,11 @@
 #include <synfig/renddesc.h>
 #include <synfig/surface.h>
 #include <synfig/value.h>
-#include <synfig/valuenode.h>
-
-#include <synfig/rendering/software/surfacesw.h>
 
 #endif
 
 /* === U S I N G =========================================================== */
 
-using namespace std;
 using namespace etl;
 using namespace synfig;
 using namespace modules;

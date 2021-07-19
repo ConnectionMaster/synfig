@@ -31,16 +31,13 @@
 #endif
 
 #include <synfig/localization.h>
-#include <synfig/general.h>
 
 #include <synfig/string.h>
 #include <synfig/time.h>
 #include <synfig/context.h>
 #include <synfig/paramdesc.h>
 #include <synfig/renddesc.h>
-#include <synfig/surface.h>
 #include <synfig/value.h>
-#include <synfig/valuenode.h>
 #include <synfig/transform.h>
 #include "twirl.h"
 
@@ -48,7 +45,6 @@
 
 /* === U S I N G =========================================================== */
 
-using namespace std;
 using namespace etl;
 using namespace synfig;
 using namespace modules;
@@ -185,12 +181,6 @@ Color
 Twirl::get_color(Context context, const Point &pos)const
 {
 	return context.get_color(distort(pos));
-}
-
-CairoColor
-Twirl::get_cairocolor(Context context, const Point &pos)const
-{
-	return context.get_cairocolor(distort(pos));
 }
 
 

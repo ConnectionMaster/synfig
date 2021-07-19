@@ -31,7 +31,6 @@
 
 #include "layer_filtergroup.h"
 
-#include <synfig/general.h>
 #include <synfig/localization.h>
 
 #include <synfig/canvas.h>
@@ -48,7 +47,6 @@
 /* === U S I N G =========================================================== */
 
 using namespace etl;
-using namespace std;
 using namespace synfig;
 
 /* === M A C R O S ========================================================= */

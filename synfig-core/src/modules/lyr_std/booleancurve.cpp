@@ -32,22 +32,18 @@
 #include "booleancurve.h"
 
 #include <synfig/localization.h>
-#include <synfig/general.h>
 
 #include <synfig/string.h>
-#include <synfig/time.h>
 #include <synfig/context.h>
 #include <synfig/paramdesc.h>
 #include <synfig/renddesc.h>
 #include <synfig/surface.h>
 #include <synfig/value.h>
-#include <synfig/valuenode.h>
 
 #endif
 
 /* === U S I N G =========================================================== */
 
-using namespace std;
 using namespace etl;
 using namespace synfig;
 using namespace modules;
@@ -75,15 +71,15 @@ bool BooleanCurve::set_param(const String & param, const ValueBase &value)
 {
 	if(param=="regions" && value.same_type_as(ValueBase::List()))
 	{
-		vector<BLinePoint> bv;
+		std::vector<BLinePoint> bv;
 		int size = value.get_list().size();
 
-		const vector<ValueBase> &vlist = value.get_list();
+		const std::vector<ValueBase> &vlist = value.get_list();
 
 		regions.clear();
 		for(int i = 0; i < size; ++i)
 		{
-			regions.push_back(vector<BLinePoint>(vlist[i].get_list_of(BLinePoint())));
+			regions.push_back(std::vector<BLinePoint>(vlist[i].get_list_of(BLinePoint())));
 		}
 		return true;
 	}

@@ -1,6 +1,3 @@
-# TODO: find out which version is actually required
-cmake_minimum_required(VERSION 3.1)
-
 ##
 ## Find packages
 ##
@@ -33,6 +30,7 @@ if(VCPKG_TOOLCHAIN)
 	set(GDK_PIXBUF_LIB_SUFFIX 2.0)
 	if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	    set(CAIRO_LIB_SUFFIX d)
+	    set(LIB_PNG_SUFFIX d)
 	endif()
 
 	# find dependencies
@@ -80,7 +78,7 @@ if(VCPKG_TOOLCHAIN)
 	find_library(GDK_LIBRARY gdk-3.0)
 	find_library(GDKMM_LIBRARY gdkmm)
 	find_library(GIOMM_LIBRARY giomm)
-	find_library(GLIBMM_LIBRARY glibmm)
+	find_library(GLIBMM_LIBRARY glibmm-2.0)
 	find_library(GTK_LIBRARY gtk-3.0)
 	find_library(GTKMM_LIBRARY gtkmm)
 	find_library(PANGOFT2_LIBRARY pangoft2-${PANGO_LIB_SUFFIX})
@@ -93,10 +91,17 @@ if(VCPKG_TOOLCHAIN)
 	find_library(ZLIB_LIBRARY zlib${CAIRO_LIB_SUFFIX})
 	find_library(LTDL_LIBRARY ltdl)
 
+    #libpng, libjpeg, freetype
+    find_library(LIBPNG_LIBRARY libpng16${LIB_PNG_SUFFIX})
+    find_library(LIBJPEG_LIBRARIES jpeg${LIB_PNG_SUFFIX})
+    find_library(FREETYPE_LIBRARY freetype${LIB_PNG_SUFFIX})
+
     #set(SIGCPP_LIBRARIES ${SIGC_LIBRARY} ${SIGCPP_LIBRARY})
     set(SIGCPP_LIBRARIES ${SIGC_LIBRARY})
     set(GIOMM_LIBRARIES ${GLIB_GIO_LIBRARY} ${GIOMM_LIBRARY})
     set(GLIBMM_LIBRARIES ${GLIBMM_LIBRARY} ${GLIB_GLIB_LIBRARY})
+    set(LIBPNG_LIBRARIES ${LIBPNG_LIBRARY})
+    set(FT_LIBRARIES ${FREETYPE_LIBRARY})
     set(XMLPP_LIBRARIES ${LIBXML_LIBRARY} ${XMLPP_LIBRARY})
     set(ZLIB_LIBRARIES ${ZLIB_LIBRARY})
 
@@ -165,7 +170,7 @@ else()
 		pkg_check_modules(CAIRO REQUIRED cairo)
 		pkg_check_modules(PANGOCAIRO REQUIRED pangocairo) # lyr_freetype
 		pkg_check_modules(LIBXML REQUIRED libxml++-2.6)
-		pkg_check_modules(MLT REQUIRED mlt++)
+		pkg_check_modules(MLT mlt++)
 		pkg_check_modules(FFTW REQUIRED fftw3)
 		pkg_check_modules(FT REQUIRED freetype2) # for lyr_freetype
 		pkg_check_modules(LIBPNG REQUIRED libpng) # for mod_png
@@ -179,6 +184,10 @@ else()
 		## TODO: move to module where it is actually required
 		pkg_check_modules(PANGO REQUIRED pango)
 	endif()
+endif()
+
+if (NOT MLT_FOUND)
+	add_definitions(-DWITHOUT_MLT) # disable MLT if not found
 endif()
 
 foreach(pkg_config_lib 

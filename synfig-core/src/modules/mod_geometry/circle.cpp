@@ -32,7 +32,6 @@
 #endif
 
 #include <synfig/localization.h>
-#include <synfig/general.h>
 
 #include "circle.h"
 #include <synfig/context.h>
@@ -40,7 +39,6 @@
 #endif
 
 using namespace synfig;
-using namespace std;
 using namespace etl;
 
 /* -- G L O B A L S --------------------------------------------------------- */

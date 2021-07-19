@@ -107,7 +107,6 @@ private:
 
 	//expose the frame information etc.
 	class Preview_Target;
-	class Preview_Target_Cairo;
 	void frame_finish(const Preview_Target *);
 
 	sigc::signal0<void>	sig_changed;
@@ -191,7 +190,7 @@ class Widget_Preview : public Gtk::Table
 {
 	Gtk::DrawingArea	draw_area;
 	Glib::RefPtr<Gtk::Adjustment> adj_time_scrub; //the adjustment for the managed scrollbar
-	Gtk::HScale		scr_time_scrub;
+	Gtk::Scale		scr_time_scrub;
 	Gtk::ToggleButton	b_loop;
 	Gtk::ScrolledWindow	preview_window;
 	//Glib::RefPtr<Gdk::GC>		gc_area;

@@ -1,5 +1,4 @@
-## TODO: find out which version is actually required
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 include(SynfigIntltool)
 
 project(synfigstudio)
@@ -11,9 +10,7 @@ set(CMAKE_CXX_STANDARD 11)
 add_subdirectory(src)
 
 add_subdirectory(brushes)
-if(NOT MSVC)
 add_subdirectory(images)
-endif()
 add_subdirectory(plugins)
 add_subdirectory(po)
 add_subdirectory(sounds)

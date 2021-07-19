@@ -33,8 +33,6 @@
 
 #include "state_text.h"
 
-#include <gtkmm/alignment.h>
-
 #include <gui/app.h>
 #include <gui/canvasview.h>
 #include <gui/docks/dock_toolbox.h>
@@ -55,7 +53,6 @@
 
 /* === U S I N G =========================================================== */
 
-using namespace std;
 using namespace etl;
 using namespace synfig;
 using namespace studio;
@@ -75,15 +72,7 @@ using namespace studio;
 		&studio::StateText_Context::toggle_layer_creation))
 #endif
 
-// indentation for options layout
-#ifndef SPACING
-#define SPACING(name, px) \
-	Gtk::Alignment *name = Gtk::manage(new Gtk::Alignment()); \
-	name->set_size_request(px)
-#endif
-
 const int GAP = 3;
-const int INDENTATION = 6;
 
 /* === G L O B A L S ======================================================= */
 
@@ -102,48 +91,38 @@ class studio::StateText_Context
 
 	bool prev_workarea_layer_status_;
 
-	//Toolbox settings
+	// Toolbox settings
 	synfigapp::Settings& settings;
 
-	// holder of options
 	Gtk::Grid options_grid;
 
-	// title
 	Gtk::Label title_label;
 
-	// layer name:
 	Gtk::Label id_label;
-	Gtk::HBox id_box;
 	Gtk::Entry id_entry;
+	Gtk::Box id_box;
 
-	// layer types to create:
 	Gtk::Label layer_types_label;
 	Gtk::ToggleButton layer_text_togglebutton;
-	Gtk::HBox layer_types_box;
+	Gtk::Box layer_types_box;
 
-	// blend method
 	Gtk::Label blend_label;
-	Gtk::HBox blend_box;
 	Widget_Enum blend_enum;
+	Gtk::Box blend_box;
 
-	// opacity
 	Gtk::Label opacity_label;
 	Gtk::Scale opacity_hscl;
 
-	// paragraph
 	Gtk::Label paragraph_label;
 	Gtk::CheckButton paragraph_checkbutton;
-	Gtk::HBox paragraph_box;
+	Gtk::Box paragraph_box;
 
-	// size
 	Gtk::Label size_label;
 	Widget_Vector size_widget;
 
-	// orientation
 	Gtk::Label orientation_label;
 	Widget_Vector orientation_widget;
 
-	// font family
 	Gtk::Label family_label;
 	Gtk::Entry family_entry;
 
@@ -402,11 +381,9 @@ StateText_Context::StateText_Context(CanvasView *canvasView):
 	id_label.set_label(_("Name:"));
 	id_label.set_halign(Gtk::ALIGN_START);
 	id_label.set_valign(Gtk::ALIGN_CENTER);
-	SPACING(id_gap, GAP);
-	id_box.pack_start(id_label, Gtk::PACK_SHRINK);
-	id_box.pack_start(*id_gap, Gtk::PACK_SHRINK);
-
-	id_box.pack_start(id_entry);
+	id_label.get_style_context()->add_class("gap");
+	id_box.pack_start(id_label, false, false, 0);
+	id_box.pack_start(id_entry, true, true, 0);
 
 	layer_types_label.set_label(_("Layer Type:"));
 	layer_types_label.set_halign(Gtk::ALIGN_START);
@@ -415,17 +392,14 @@ StateText_Context::StateText_Context(CanvasView *canvasView):
 	LAYER_CREATION(layer_text_togglebutton,
 		("synfig-layer_other_text"), _("Create a text layer"));
 
-	SPACING(layer_types_indent, INDENTATION);
-
-	layer_types_box.pack_start(*layer_types_indent, Gtk::PACK_SHRINK);
-	layer_types_box.pack_start(layer_text_togglebutton, Gtk::PACK_SHRINK);
+	layer_text_togglebutton.get_style_context()->add_class("indentation");
+	layer_types_box.pack_start(layer_text_togglebutton, false, false, 0);
 
 	blend_label.set_label(_("Blend Method:"));
 	blend_label.set_halign(Gtk::ALIGN_START);
 	blend_label.set_valign(Gtk::ALIGN_CENTER);
-	SPACING(blend_gap, GAP);
-	blend_box.pack_start(blend_label, Gtk::PACK_SHRINK);
-	blend_box.pack_start(*blend_gap, Gtk::PACK_SHRINK);
+	blend_label.get_style_context()->add_class("gap");
+	blend_box.pack_start(blend_label, false, false, 0);
 
 	blend_enum.set_param_desc(ParamDesc(Color::BLEND_COMPOSITE,"blend_method")
 		.set_local_name(_("Blend Method"))
@@ -442,8 +416,8 @@ StateText_Context::StateText_Context(CanvasView *canvasView):
 	paragraph_label.set_label(_("Multiline Text"));
 	paragraph_label.set_halign(Gtk::ALIGN_START);
 	paragraph_label.set_valign(Gtk::ALIGN_CENTER);
-	paragraph_box.pack_start(paragraph_label, Gtk::PACK_SHRINK);
-	paragraph_box.pack_end(paragraph_checkbutton, Gtk::PACK_SHRINK);
+	paragraph_box.pack_start(paragraph_label, true, true, 0);
+	paragraph_box.pack_start(paragraph_checkbutton, false, false, 0);
 
 	size_label.set_label(_("Size:"));
 	size_label.set_halign(Gtk::ALIGN_START);
@@ -494,6 +468,7 @@ StateText_Context::StateText_Context(CanvasView *canvasView):
 	options_grid.attach(family_entry,
 		1, 9, 1, 1);
 
+	options_grid.set_vexpand(false);
 	options_grid.set_border_width(GAP*2);
 	options_grid.set_row_spacing(GAP);
 	options_grid.set_margin_bottom(0);

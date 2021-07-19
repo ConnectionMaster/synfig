@@ -260,6 +260,13 @@ DockBook::tab_button_pressed(GdkEventButton* event, Dockable* dockable)
 {
 	SYNFIG_EXCEPTION_GUARD_BEGIN()
 	CanvasView *canvas_view = dynamic_cast<CanvasView*>(dockable);
+
+	// Handle middle mouse click event first before showing the canvas
+	if (event->button == 2 && canvas_view) {
+		canvas_view->close_view();
+		return true;
+	}
+
 	if (canvas_view && canvas_view != App::get_selected_canvas_view())
 		App::set_selected_canvas_view(canvas_view);
 
@@ -269,12 +276,14 @@ DockBook::tab_button_pressed(GdkEventButton* event, Dockable* dockable)
 	Gtk::Menu *tabmenu=manage(new class Gtk::Menu());
 	tabmenu->signal_hide().connect(sigc::bind(sigc::ptr_fun(&delete_widget), tabmenu));
 
-	Gtk::MenuItem *item = manage(new Gtk::MenuItem(_("Undock panel")));
-	item->signal_activate().connect(sigc::mem_fun(*dockable, &Dockable::detach_to_pointer));
-	item->show();
-	tabmenu->append(*item);
+	if (get_n_pages() > 1 || (get_parent() && get_parent()->get_children().size() > 1)) {
+		Gtk::MenuItem *item = manage(new Gtk::MenuItem(_("Undock panel")));
+		item->signal_activate().connect(sigc::mem_fun(*dockable, &Dockable::detach_to_pointer));
+		item->show();
+		tabmenu->append(*item);
+	}
 
-	item = manage(new Gtk::ImageMenuItem(Gtk::StockID("gtk-close")));
+	Gtk::MenuItem *item = manage(new Gtk::ImageMenuItem(Gtk::StockID("gtk-close")));
 	item->signal_activate().connect(
 		sigc::bind(sigc::ptr_fun(&DockManager::remove_widget_by_pointer_recursive), dockable) );
 	item->show();

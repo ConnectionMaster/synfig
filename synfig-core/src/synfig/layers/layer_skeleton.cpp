@@ -31,7 +31,6 @@
 
 #include "layer_skeleton.h"
 
-#include <synfig/general.h>
 #include <synfig/localization.h>
 
 #include <synfig/context.h>
@@ -48,7 +47,6 @@
 /* === U S I N G =========================================================== */
 
 using namespace etl;
-using namespace std;
 using namespace synfig;
 
 /* === G L O B A L S ======================================================= */

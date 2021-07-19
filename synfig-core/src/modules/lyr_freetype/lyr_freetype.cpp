@@ -39,15 +39,12 @@
 #include <fontconfig/fontconfig.h>
 #endif
 
-#include <pango/pangocairo.h>
-
 #include "lyr_freetype.h"
 
 #include <synfig/localization.h>
 #include <synfig/general.h>
 
 #include <synfig/canvasfilenaming.h>
-#include <synfig/cairo_renddesc.h>
 
 #include <synfig/context.h>
 
@@ -65,7 +62,6 @@
 
 #endif
 
-using namespace std;
 using namespace etl;
 using namespace synfig;
 
@@ -1019,7 +1015,7 @@ Layer_Freetype::accelerated_render(Context context,Surface *surface,int quality,
 	// If there is no font loaded, just bail
 	if(!face)
 	{
-		if(cb)cb->warning(string("Layer_Freetype:")+_("No face loaded, no text will be rendered."));
+		if(cb)cb->warning(std::string("Layer_Freetype:")+_("No face loaded, no text will be rendered."));
 		return true;
 	}
 
@@ -1034,13 +1030,13 @@ Layer_Freetype::accelerated_render(Context context,Surface *surface,int quality,
 	Vector::value_type ph=renddesc.get_h()/(renddesc.get_br()[1]-renddesc.get_tl()[1]);
 
     // Calculate character width and height
-	int w=abs(round_to_int(size[0]*pw));
-	int h=abs(round_to_int(size[1]*ph));
+	int w=std::abs(round_to_int(size[0]*pw));
+	int h=std::abs(round_to_int(size[1]*ph));
 
     // If the font is the size of a pixel, don't bother rendering any text
 	if(w<=1 || h<=1)
 	{
-		if(cb)cb->warning(string("Layer_Freetype:")+_("Text too small, no text will be rendered."));
+		if(cb)cb->warning(std::string("Layer_Freetype:")+_("Text too small, no text will be rendered."));
 		return true;
 	}
 
@@ -1051,20 +1047,20 @@ Layer_Freetype::accelerated_render(Context context,Surface *surface,int quality,
 		face,						// handle to face object
 		(int)CHAR_RESOLUTION,	// char_width in 1/64th of points
 		(int)CHAR_RESOLUTION,	// char_height in 1/64th of points
-		round_to_int(abs(size[0]*pw*CHAR_RESOLUTION)),						// horizontal device resolution
-		round_to_int(abs(size[1]*ph*CHAR_RESOLUTION)) );						// vertical device resolution
+		round_to_int(std::abs(size[0]*pw*CHAR_RESOLUTION)),						// horizontal device resolution
+		round_to_int(std::abs(size[1]*ph*CHAR_RESOLUTION)) );						// vertical device resolution
 
 	// Here is where we can compensate for the
 	// error in freetype's rendering engine.
-	const Real xerror(abs(size[0]*pw)/(Real)face->size->metrics.x_ppem/1.13f/0.996);
-	const Real yerror(abs(size[1]*ph)/(Real)face->size->metrics.y_ppem/1.13f/0.996);
+	const Real xerror(std::abs(size[0]*pw)/(Real)face->size->metrics.x_ppem/1.13f/0.996);
+	const Real yerror(std::abs(size[1]*ph)/(Real)face->size->metrics.y_ppem/1.13f/0.996);
 	//synfig::info("xerror=%f, yerror=%f",xerror,yerror);
 	const Real compress(Layer_Freetype::param_compress.get(Real())*xerror);
 	const Real vcompress(Layer_Freetype::param_vcompress.get(Real())*yerror);
 
 	if(error)
 	{
-		if(cb)cb->warning(string("Layer_Freetype:")+_("Unable to set face size.")+strprintf(" (err=%d)",error));
+		if(cb)cb->warning(std::string("Layer_Freetype:")+_("Unable to set face size.")+strprintf(" (err=%d)",error));
 	}
 
 	FT_GlyphSlot  slot = face->glyph;  // a small shortcut
@@ -1082,7 +1078,7 @@ Layer_Freetype::accelerated_render(Context context,Surface *surface,int quality,
 	memset(&ps, 0, sizeof(ps));
 
 	lines.push_front(TextLine());
-	string::const_iterator iter;
+	std::string::const_iterator iter;
 	int bx=0;
 	int by=0;
 
@@ -1297,194 +1293,7 @@ Layer_Freetype::accelerated_render(Context context,Surface *surface,int quality,
 	return true;
 }
 
-////
-bool
-Layer_Freetype::accelerated_cairorender(Context context, cairo_t *cr, int quality, const RendDesc &renddesc, ProgressCallback *cb)const
-{
-	int style=param_style.get(int());
-	int weight=param_weight.get(int());
-	synfig::Vector size=param_size.get(Vector());
-	synfig::Real compress=param_compress.get(synfig::Real());
-	synfig::Real vcompress=param_vcompress.get(synfig::Real());
-	bool invert=param_invert.get(bool());
-	Color color=param_color.get(Color());
-	synfig::Point origin=param_origin.get(Point());
-	synfig::Vector orient=param_orient.get(Vector());
-	synfig::String font=param_font.get(synfig::String());
-	synfig::String text=param_text.get(synfig::String());
 
-	if(!is_solid_color())
-	{
-		// Initially render what's behind us
-		if(!context.accelerated_cairorender(cr,quality,renddesc,cb))
-		{
-			if(cb)cb->error(strprintf(__FILE__"%d: Accelerated Cairo Renderer Failure",__LINE__));
-			return false;
-		}
-	}
-
-	RendDesc workdesc(renddesc);
-
-	// Untransform the render desc
-	if(!cairo_renddesc_untransform(cr, workdesc))
-		return false;
-
-	// New expanded workdesc values
-	const int ww=workdesc.get_w();
-	const int wh=workdesc.get_h();
-	const double wtlx=workdesc.get_tl()[0];
-	const double wtly=workdesc.get_tl()[1];
-	const double wpw=workdesc.get_pw();
-	const double wph=workdesc.get_ph();
-	const double wsx=1/wpw;
-	const double wsy=1/wph;
-	const double wtx=(-wtlx+origin[0])*wsx;
-	const double wty=(-wtly+origin[1])*wsy;
-
-	// Cairo context
-	cairo_surface_t* subimage = NULL;
-	cairo_surface_t* inverted = NULL;
-	subimage=cairo_surface_create_similar(cairo_get_target(cr), CAIRO_CONTENT_COLOR_ALPHA, ww, wh);
-	cairo_t* subcr=cairo_create(subimage);
-	cairo_t* invertcr = NULL;
-	if(invert)
-	{
-		inverted=cairo_surface_create_similar(cairo_get_target(cr), CAIRO_CONTENT_COLOR_ALPHA, ww, wh);
-		invertcr=cairo_create(inverted);
-		cairo_set_source_rgba(invertcr, color.get_r(), color.get_g(), color.get_b(), color.get_a());
-		cairo_paint_with_alpha(invertcr, get_amount());
-	}
-
-	// Pango
-	PangoLayout *layout;
-	PangoFontDescription *font_description;
-	// Pango Font
-	font_description = pango_font_description_new ();
-	pango_font_description_set_family (font_description, font.c_str());
-	pango_font_description_set_weight (font_description, PangoWeight(weight));
-	pango_font_description_set_style (font_description, PangoStyle(style));
-	// The size is scaled to match Software render size (remove the scale?)
-	Real sizex=1.75*fabs(size[0])*fabs(wsx);
-	Real sizey=1.75*fabs(size[1])*fabs(wsy);
-	Real vscale=sizey/sizex;
-	pango_font_description_set_absolute_size (font_description, sizex * PANGO_SCALE );
-
-	//Pango Layout
-	layout = pango_cairo_create_layout (subcr);
-
-	pango_layout_set_font_description (layout, font_description);
-	pango_layout_set_text (layout, text.c_str(), -1);
-	if(orient[0]<0.4)
-		pango_layout_set_alignment(layout, PANGO_ALIGN_LEFT);
-	else if(orient[0]>0.6)
-		pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
-	else
-		pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
-
-	pango_layout_set_single_paragraph_mode(layout, false);
-
-	// Calculate the logical and ink rectangles of the layout before add spacing
-	PangoRectangle ink_layout, logical_layout;
-	PangoRectangle ink_rect, logical_rect;
-	pango_layout_get_pixel_extents(layout, &ink_layout, &logical_layout);
-
-	// Spacing
-	// Horizontal
-	PangoAttrList* attrlist=pango_attr_list_new();
-	Real hspace=compress>1.0?0.4*sizex*(compress-1.0):(compress<1.0)?0.5*sizex*(compress-1.0):0;
-	PangoAttribute* spacing=pango_attr_letter_spacing_new(hspace*PANGO_SCALE);
-	pango_attr_list_insert_before(attrlist, spacing);
-	pango_layout_set_attributes(layout, attrlist);
-
-	// Vertical
-	int total_lines=pango_layout_get_line_count(layout);
-	Real vspace_total=vcompress>1.0?0.4*logical_layout.height*(vcompress-1.0):(vcompress<1.0)?0.6*logical_layout.height*(vcompress-1.0):0;
-	Real vspace=0;
-	if(total_lines>1)
-		vspace=vspace_total/(total_lines-1);
-	pango_layout_set_spacing(layout, vspace*PANGO_SCALE);
-
-	// Recalculate extents due to spacing changes
-	pango_layout_get_pixel_extents(layout, &ink_layout, &logical_layout);
-
-	// Render text
-	cairo_save(subcr);
-	cairo_set_source_rgba(subcr, color.get_r(), color.get_g(), color.get_b(), color.get_a());
-	cairo_scale(subcr, 1.0, vscale);
-	pango_cairo_update_layout(subcr, layout);
-	cairo_move_to(subcr, wtx-logical_layout.width*orient[0], (wty-(logical_layout.height+vspace_total)*vscale*orient[1])/vscale);
-	pango_cairo_show_layout(subcr, layout);
-
-	// Debug ink and logical lines
-	if(0)
-	{
-		pango_layout_get_pixel_extents(layout, &ink_rect, &logical_rect);
-		// Render logical and ink rectangles
-		cairo_save(subcr);
-		cairo_set_source_rgb(subcr, 0.0, 1.0, 0.0);
-		cairo_set_line_width(subcr, 1.0);
-		cairo_rectangle(subcr, wtx+ink_rect.x-0.5-logical_layout.width*orient[0],
-						wty+ink_rect.y-0.5-(logical_layout.height+vspace_total)*orient[1],
-						ink_rect.width,
-						ink_rect.height);
-		cairo_stroke(subcr);
-		cairo_restore(subcr);
-
-		cairo_save(subcr);
-		cairo_set_line_width(subcr, 1.0);
-		cairo_set_source_rgb(subcr, 0.0, 0.0, 1.0);
-		cairo_rectangle(subcr, wtx+logical_rect.x-0.5-logical_layout.width*orient[0],
-						wty+logical_rect.y-0.5-(logical_layout.height+vspace_total)*orient[1],
-						logical_rect.width,
-						logical_rect.height);
-		cairo_stroke(subcr);
-		cairo_move_to(subcr, wtx+2, wty);
-		cairo_arc(subcr, wtx, wty, 2.0, 0, 2*3.141516);
-		cairo_fill(subcr);
-		cairo_restore(subcr);
-	}
-	cairo_restore(subcr);
-
-	cairo_save(cr);
-	// Render the text on the target surface with the proper operator
-	if(invert)
-	{
-		cairo_set_source_surface(invertcr, subimage, 0,0);
-		cairo_set_operator(invertcr, CAIRO_OPERATOR_DEST_OUT);
-		cairo_paint_with_alpha(invertcr, get_amount());
-	}
-	// Need to scale down to user coordinates before pass to cr
-	cairo_translate(cr, wtlx, wtly);
-	cairo_scale(cr, wpw, wph);
-	if(invert)
-		cairo_set_source_surface(cr, inverted, 0, 0);
-	else
-		cairo_set_source_surface(cr, subimage, 0, 0);
-	if(is_solid_color())
-	{
-		cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-		cairo_paint(cr);
-	}
-	else
-	{
-		cairo_paint_with_alpha_operator(cr, get_amount(), get_blend_method());
-	}
-	cairo_restore(cr);
-
-	// Destroy and return
-	cairo_surface_destroy(subimage);
-	cairo_destroy(subcr);
-	if(invert)
-	{
-		cairo_surface_destroy(inverted);
-		cairo_destroy(invertcr);
-	}
-	pango_attr_list_unref(attrlist);
-	g_object_unref (layout);
-	pango_font_description_free (font_description);
-	return true;
-}
-////
 
 
 synfig::Rect

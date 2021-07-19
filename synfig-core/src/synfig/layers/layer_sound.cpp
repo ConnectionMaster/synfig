@@ -31,7 +31,6 @@
 
 #include <glibmm/convert.h>
 
-#include <synfig/general.h>
 #include <synfig/localization.h>
 
 #include <synfig/real.h>
@@ -49,7 +48,6 @@
 /* === U S I N G =========================================================== */
 
 using namespace etl;
-using namespace std;
 using namespace synfig;
 
 /* === G L O B A L S ======================================================= */
